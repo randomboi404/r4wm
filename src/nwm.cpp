@@ -1513,6 +1513,12 @@ void nwm::focus_window(ManagedWindow *window, Base &base)
             titlebar_draw(window, base);
         }
 
+        Atom active_atom = XInternAtom(base.display, "_NET_ACTIVE_WINDOW", False);
+        Window active_window = window ? window->window : None;
+        XChangeProperty(base.display, base.root, active_atom,
+            XA_WINDOW, 32, PropModeReplace,
+            (unsigned char*)&active_window, 1);
+
         XSetInputFocus(base.display, window->window, RevertToPointerRoot, CurrentTime);
         XFlush(base.display);
     } else {
