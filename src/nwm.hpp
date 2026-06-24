@@ -197,6 +197,8 @@ void handle_property_notify(XPropertyEvent *e, Base &base);
 
 void setup_ewmh(Base &base);
 void reload_config(void *arg, Base &base);
+void spawn_at_startup(void *arg, Base &base);
+void spawn_sh_at_startup(void *arg, Base &base);
 void spawn(void *arg, Base &base);
 void setup_keys(Base &base);
 void run(Base &base);

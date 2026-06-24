@@ -1296,6 +1296,24 @@ void nwm::spawn(void *arg, nwm::Base &base)
     XSetInputFocus(base.display, base.root, RevertToPointerRoot, CurrentTime);
 }
 
+void nwm::spawn_at_startup(void *arg, Base &base) {
+    (void)arg;
+
+    for (auto command: spawn_commands_at_startup) {
+        spawn(command, base);
+    }
+}
+
+void nwm::spawn_sh_at_startup(void *arg, Base &base) {
+    (void)arg;
+
+    for (auto cmd_ptr : spawn_sh_commands_at_startup) {
+        const char *raw_command = *cmd_ptr;
+        const char *sh_wrapper[] = { "sh", "-c", raw_command, NULL };
+        spawn(sh_wrapper, base);
+    }
+}
+
 void nwm::toggle_gap(void *arg, nwm::Base &base)
 {
     (void)arg;
@@ -2666,6 +2684,9 @@ void nwm::init(Base &base)
     }
     update_struts(base);
     bar_draw(base);
+
+    spawn_at_startup(NULL, base);
+    spawn_sh_at_startup(NULL, base);
 }
 
 void nwm::cleanup(Base &base)

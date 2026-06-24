@@ -90,6 +90,16 @@ static const char *dmenucmd[]   = { "dmenu_run", NULL };
 static const char *browser[]    = { "firefox",   NULL };
 static const char *zoomer[]     = { "zoomer",   NULL };
 
+static const char *fehcmd[]        = { "feh --bg-fill ~/Pictures/Wallpapers/*", NULL };;
+
+static const char **spawn_commands_at_startup[] = {
+    termcmd
+};
+
+static const char **spawn_sh_commands_at_startup[] = {
+    fehcmd
+};
+
 static const int ws0 = 0;
 static const int ws1 = 1;
 static const int ws2 = 2;
