@@ -1,5 +1,5 @@
 #include "nwm.hpp"
-#include "_config.hpp"
+#include "config.hpp"
 #include "bar.hpp"
 #include "tiling.hpp"
 #include "systray.hpp"
@@ -746,6 +746,10 @@ void nwm::workspace_init(Base &base)
         ws.scroll_offset = 0;
         ws.scroll_maximized = false;
     }
+    auto sws = &base.special_workspace;
+    sws->focused_window = nullptr;
+    sws->scroll_offset = 0;
+    sws->scroll_maximized = false;
     base.current_workspace = 0;
     base.overview_mode = false;
     base.dragging = false;
@@ -905,6 +909,129 @@ void nwm::switch_workspace(void *arg, Base &base)
     bar_update_workspaces(base);
 
     XSync(base.display, False);
+}
+
+void nwm::toggle_scratchpad(void *arg, Base &base) {
+    (void)arg;
+    if (base.special_workspace.windows.empty()) {
+        add_to_scratchpad(base);
+    } else {
+        remove_from_scratchpad(base);
+    }
+}
+
+void nwm::add_to_scratchpad(Base &base) {
+    const int target_ws = -1;
+    auto &current_ws = get_current_workspace(base);
+
+    for (auto it = current_ws.windows.begin(); it != current_ws.windows.end(); ++it) {
+        if (it->window == base.focused_window->window) {
+            ManagedWindow w = *it;
+            w.workspace = target_ws;
+            w.is_floating = false;
+
+            if (base.anim_manager && base.anim_manager->animations_enabled &&
+                    base.anim_manager->window_close_enabled) {
+                animate_window_close(base, w.window, [&base, w, target_ws, it]() mutable {
+                    auto &curr_ws = base.workspaces[base.current_workspace];
+
+                    for (auto iter = curr_ws.windows.begin(); iter != curr_ws.windows.end(); ++iter)
+                    {
+                        if (iter->window == w.window) {
+                            curr_ws.windows.erase(iter);
+                            break;
+                        }
+                    }
+
+                    base.special_workspace.windows.push_back(w);
+
+                    Atom workspace_atom = XInternAtom(base.display, "_NWM_WORKSPACE", False);
+                    long workspace_id = target_ws;
+                    XChangeProperty(base.display, w.window, workspace_atom,
+                                    XA_CARDINAL, 32, PropModeReplace,
+                                    (unsigned char*)&workspace_id, 1);
+
+                    XUnmapWindow(base.display, w.window);
+
+                    if (curr_ws.focused_window && curr_ws.focused_window->window == w.window)
+                    {
+                        curr_ws.focused_window = nullptr;
+                    }
+                    base.focused_window = nullptr;
+
+                    if (!curr_ws.windows.empty())
+                    {
+                        focus_window(&curr_ws.windows[0], base);
+                    }
+
+                    if (base.horizontal_mode)
+                    {
+                        tile_horizontal(base);
+                    } else
+                    {
+                        tile_windows(base);
+                    }
+                });
+                return;
+                    }
+
+            current_ws.windows.erase(it);
+            base.special_workspace.windows.push_back(w);
+
+            Atom workspace_atom = XInternAtom(base.display, "_NWM_WORKSPACE", False);
+            long workspace_id = target_ws;
+            XChangeProperty(base.display, w.window, workspace_atom,
+                            XA_CARDINAL, 32, PropModeReplace,
+                            (unsigned char*)&workspace_id, 1);
+
+            XUnmapWindow(base.display, w.window);
+
+            if (current_ws.focused_window && current_ws.focused_window->window == w.window) {
+                current_ws.focused_window = nullptr;
+            }
+            base.focused_window = nullptr;
+
+            if (!current_ws.windows.empty()) {
+                focus_window(&current_ws.windows[0], base);
+            }
+
+            break;
+        }
+    }
+
+    if (base.horizontal_mode) {
+        tile_horizontal(base);
+    } else {
+        tile_windows(base);
+    }
+}
+
+void nwm::remove_from_scratchpad(Base &base) {
+    auto &target_ws = get_current_workspace(base);
+
+    ManagedWindow w = base.special_workspace.windows[0];
+    w.workspace = base.current_workspace;
+
+    target_ws.windows.push_back(w);
+
+    Atom workspace_atom = XInternAtom(base.display, "_NWM_WORKSPACE", False);
+    long workspace_id = base.current_workspace;
+    XChangeProperty(base.display, w.window, workspace_atom,
+                    XA_CARDINAL, 32, PropModeReplace,
+                    (unsigned char*)&workspace_id, 1);
+
+    XMapWindow(base.display, w.window);
+
+    focus_window(&target_ws.windows.back(), base);
+    toggle_float(0, base);
+
+    base.special_workspace.windows.erase(base.special_workspace.windows.begin());
+
+    if (base.horizontal_mode) {
+        tile_horizontal(base);
+    } else {
+        tile_windows(base);
+    }
 }
 
 void nwm::move_to_workspace(void *arg, Base &base)

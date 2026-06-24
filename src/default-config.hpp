@@ -101,6 +101,8 @@ static const int ws7 = 7;
 static const int ws8 = 8;
 static const int ws9 = 9;
 
+static const int sws = -1;
+
 static const int mon0 = 0;
 static const int mon1 = 1;
 static const int mon2 = 2;
@@ -163,6 +165,8 @@ inline __attribute__((unused)) const struct {
     { MODKEY,             XK_8,               switch_workspace, (void*)&ws7 },
     { MODKEY,             XK_9,               switch_workspace, (void*)&ws8 },
     { MODKEY,             XK_0,               switch_workspace, (void*)&ws9 },
+
+    { MODKEY | ShiftMask, XK_s,               toggle_scratchpad, (void*)&sws },
 
     { MODKEY | ShiftMask, XK_1,               move_to_workspace, (void*)&ws0 },
     { MODKEY | ShiftMask, XK_2,               move_to_workspace, (void*)&ws1 },

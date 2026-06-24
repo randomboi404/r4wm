@@ -114,6 +114,7 @@ struct Base {
     StatusBar bar;
     SystemTray systray;
     std::vector<Workspace> workspaces;
+    Workspace special_workspace;
     size_t current_workspace;
     bool overview_mode;
 
@@ -172,6 +173,9 @@ void scroll_right(void *arg, Base &base);
 void move_horizontal(void *arg, Base &base, bool forward, bool window_based, bool animate, bool change_focus);
 
 void switch_workspace(void *arg, Base &base);
+void toggle_scratchpad(void *arg, Base &base);
+void add_to_scratchpad(Base &base);
+void remove_from_scratchpad(Base &base);
 void move_to_workspace(void *arg, Base &base);
 void workspace_init(Base &base);
 Workspace& get_current_workspace(Base &base);
