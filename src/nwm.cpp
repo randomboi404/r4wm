@@ -1034,6 +1034,118 @@ void nwm::remove_from_scratchpad(Base &base) {
     }
 }
 
+void nwm::move_and_switch_to_workspace(void *arg, Base &base) {
+    if (!arg || !base.focused_window) return;
+
+    if (base.focused_window->is_fullscreen) {
+        toggle_fullscreen(nullptr, base);
+    }
+
+    int target_ws = *(int*)arg;
+    if (target_ws < 0 || target_ws >= NUM_WORKSPACES) return;
+
+    if (target_ws == (int)base.current_workspace) return;
+    auto &current_ws = get_current_workspace(base);
+
+    for (auto it = current_ws.windows.begin(); it != current_ws.windows.end(); ++it) {
+        if (it->window == base.focused_window->window) {
+            ManagedWindow w = *it;
+            w.workspace = target_ws;
+
+            current_ws.windows.erase(it);
+            base.workspaces[target_ws].windows.push_back(w);
+
+            Atom workspace_atom = XInternAtom(base.display, "_NWM_WORKSPACE", False);
+            long workspace_id = target_ws;
+            XChangeProperty(base.display, w.window, workspace_atom,
+                XA_CARDINAL, 32, PropModeReplace,
+                (unsigned char*)&workspace_id, 1);
+
+            if (current_ws.focused_window && current_ws.focused_window->window == w.window) {
+                current_ws.focused_window = nullptr;
+            }
+            base.focused_window = nullptr;
+
+            if (!current_ws.windows.empty()) {
+                focus_window(&current_ws.windows[0], base);
+            }
+
+            break;
+        }
+    }
+
+    if (base.horizontal_mode) {
+        tile_horizontal(base);
+    } else {
+        tile_windows(base);
+    }
+
+    XSync(base.display, False);
+
+    if (base.anim_manager) {
+        cancel_all_animations(base);
+    }
+
+    {
+        long desktop = target_ws;
+        Atom ncd = XInternAtom(base.display, "_NET_CURRENT_DESKTOP", False);
+        XChangeProperty(base.display, base.root, ncd, XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char*)&desktop, 1);
+    }
+
+    for (auto &w : current_ws.windows) {
+        if (!is_window_animating(base, w.window)) {
+            XUnmapWindow(base.display, w.window);
+            if (w.has_titlebar) {
+                XUnmapWindow(base.display, w.titlebar.window);
+            }
+        }
+    }
+
+    int old_workspace = base.current_workspace;
+    base.current_workspace = target_ws;
+
+    Monitor *mon = get_current_monitor(base);
+    if (mon) {
+        mon->current_workspace = target_ws;
+    }
+
+    if (base.anim_manager && base.anim_manager->animations_enabled &&
+            base.anim_manager->workspace_switch_enabled) {
+        animate_workspace_switch(base, old_workspace, target_ws);
+    }
+
+    auto &new_ws = base.workspaces[target_ws];
+
+    for (auto &w : new_ws.windows) {
+        XMapWindow(base.display, w.window);
+        if (w.has_titlebar && !w.is_floating && !w.is_fullscreen) {
+            XMapWindow(base.display, w.titlebar.window);
+            XRaiseWindow(base.display, w.titlebar.window);
+        }
+        if (w.is_floating || w.is_fullscreen) {
+            XRaiseWindow(base.display, w.window);
+        }
+    }
+
+    if (base.horizontal_mode) {
+        tile_horizontal(base);
+    } else {
+        tile_windows(base);
+    }
+
+    base.focused_window = &new_ws.windows.back();
+    new_ws.focused_window = base.focused_window;
+
+    if (base.focused_window) {
+        focus_window(base.focused_window, base);
+    }
+
+    bar_update_workspaces(base);
+
+    XSync(base.display, False);
+}
+
 void nwm::move_to_workspace(void *arg, Base &base)
 {
     if (!arg || !base.focused_window) return;

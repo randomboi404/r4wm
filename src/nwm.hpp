@@ -176,6 +176,7 @@ void switch_workspace(void *arg, Base &base);
 void toggle_scratchpad(void *arg, Base &base);
 void add_to_scratchpad(Base &base);
 void remove_from_scratchpad(Base &base);
+void move_and_switch_to_workspace(void *arg, Base &base);
 void move_to_workspace(void *arg, Base &base);
 void workspace_init(Base &base);
 Workspace& get_current_workspace(Base &base);
