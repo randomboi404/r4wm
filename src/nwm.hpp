@@ -116,6 +116,7 @@ struct Base {
     std::vector<Workspace> workspaces;
     Workspace special_workspace;
     size_t current_workspace;
+    size_t previous_workspace;
     bool overview_mode;
 
     std::vector<std::string> widget;
@@ -178,6 +179,7 @@ void add_to_scratchpad(Base &base);
 void remove_from_scratchpad(Base &base);
 void move_and_switch_to_workspace(void *arg, Base &base);
 void move_to_workspace(void *arg, Base &base);
+void move_to_previous_workspace(void *arg, Base &base);
 void workspace_init(Base &base);
 Workspace& get_current_workspace(Base &base);
 void toggle_scroll_maximize(void *arg, Base &base);

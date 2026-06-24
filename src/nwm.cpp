@@ -751,6 +751,7 @@ void nwm::workspace_init(Base &base)
     sws->scroll_offset = 0;
     sws->scroll_maximized = false;
     base.current_workspace = 0;
+    base.previous_workspace = NUM_WORKSPACES;
     base.overview_mode = false;
     base.dragging = false;
     base.drag_window = None;
@@ -847,8 +848,9 @@ void nwm::switch_workspace(void *arg, Base &base)
         }
     }
 
-    int old_workspace = base.current_workspace;
+    size_t old_workspace = base.current_workspace;
     base.current_workspace = target_ws;
+    base.previous_workspace = old_workspace;
 
     Monitor *mon = get_current_monitor(base);
     if (mon) {
@@ -1102,8 +1104,9 @@ void nwm::move_and_switch_to_workspace(void *arg, Base &base) {
         }
     }
 
-    int old_workspace = base.current_workspace;
+    size_t old_workspace = base.current_workspace;
     base.current_workspace = target_ws;
+    base.previous_workspace = old_workspace;
 
     Monitor *mon = get_current_monitor(base);
     if (mon) {
@@ -1229,7 +1232,6 @@ void nwm::move_to_workspace(void *arg, Base &base)
             if (!current_ws.windows.empty()) {
                 focus_window(&current_ws.windows[0], base);
             }
-
             break;
         }
     }
@@ -1239,6 +1241,12 @@ void nwm::move_to_workspace(void *arg, Base &base)
     } else {
         tile_windows(base);
     }
+}
+
+void nwm::move_to_previous_workspace(void *arg, Base &base) {
+    (void)arg;
+
+    switch_workspace((void*)&base.previous_workspace, base);
 }
 
 void nwm::setup_keys(nwm::Base &base)

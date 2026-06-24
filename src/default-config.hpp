@@ -90,7 +90,7 @@ static const char *dmenucmd[]   = { "dmenu_run", NULL };
 static const char *browser[]    = { "firefox",   NULL };
 static const char *zoomer[]     = { "zoomer",   NULL };
 
-static const char *fehcmd[]        = { "feh --bg-fill ~/Pictures/Wallpapers/*", NULL };;
+static const char *fehcmd[]        = { "feh --bg-fill ~/Pictures/Wallpapers/*", NULL };
 
 static const char **spawn_commands_at_startup[] = {
     termcmd
@@ -164,6 +164,8 @@ inline __attribute__((unused)) const struct {
 
     { MODKEY,             XK_equal,          increment_scroll_visible, NULL },
     { MODKEY,             XK_minus,          decrement_scroll_visible, NULL },
+
+    { MODKEY,               XK_Tab,                 move_to_previous_workspace, NULL },
 
     { MODKEY,             XK_1,               switch_workspace, (void*)&ws0 },
     { MODKEY,             XK_2,               switch_workspace, (void*)&ws1 },
