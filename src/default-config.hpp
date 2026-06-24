@@ -71,14 +71,18 @@ using namespace nwm;
 #define FONT                "Ubuntu Mono:size=12"
 
 static const std::vector<std::string> WIDGET = {
-    "1","2","3","4","5","6","7","8","9"
+    "1","2","3","4","5","6","7","8","9","0"
 };
 
 #define RESIZE_STEP         60
 
 #define SCROLL_STEP         550
 
-#define MODKEY Mod4Mask
+#ifdef XEPHYR
+    #define MODKEY Mod1Mask
+#else
+    #define MODKEY Mod4Mask
+#endif
 
 static const char *termcmd[]    = { "kitty",        NULL };
 static const char *emacs[]      = { "emacs",     NULL };
@@ -95,6 +99,7 @@ static const int ws5 = 5;
 static const int ws6 = 6;
 static const int ws7 = 7;
 static const int ws8 = 8;
+static const int ws9 = 9;
 
 static const int mon0 = 0;
 static const int mon1 = 1;
@@ -157,6 +162,7 @@ inline __attribute__((unused)) const struct {
     { MODKEY,             XK_7,               switch_workspace, (void*)&ws6 },
     { MODKEY,             XK_8,               switch_workspace, (void*)&ws7 },
     { MODKEY,             XK_9,               switch_workspace, (void*)&ws8 },
+    { MODKEY,             XK_0,               switch_workspace, (void*)&ws9 },
 
     { MODKEY | ShiftMask, XK_1,               move_to_workspace, (void*)&ws0 },
     { MODKEY | ShiftMask, XK_2,               move_to_workspace, (void*)&ws1 },
@@ -167,6 +173,7 @@ inline __attribute__((unused)) const struct {
     { MODKEY | ShiftMask, XK_7,               move_to_workspace, (void*)&ws6 },
     { MODKEY | ShiftMask, XK_8,               move_to_workspace, (void*)&ws7 },
     { MODKEY | ShiftMask, XK_9,               move_to_workspace, (void*)&ws8 },
+    { MODKEY | ShiftMask, XK_0,               move_to_workspace, (void*)&ws9 },
 
     { MODKEY | ShiftMask, XK_q,               quit_wm,        NULL },
     { MODKEY | ShiftMask, XK_r,               quit_wm,        (void*)1 },

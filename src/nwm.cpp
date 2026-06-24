@@ -1,5 +1,5 @@
 #include "nwm.hpp"
-#include "config.hpp"
+#include "_config.hpp"
 #include "bar.hpp"
 #include "tiling.hpp"
 #include "systray.hpp"

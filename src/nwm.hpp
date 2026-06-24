@@ -17,7 +17,7 @@
 
 #define WIDTH(display, screen_number) XDisplayWidth((display), (screen_number))
 #define HEIGHT(display, screen_number) XDisplayHeight((display), (screen_number))
-#define NUM_WORKSPACES 9
+#define NUM_WORKSPACES 10
 
 namespace nwm {
     struct AnimationManager;

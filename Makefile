@@ -17,7 +17,7 @@ MAJOR    = 1
 MINOR    = 1
 PATCH    = 1
 
-.PHONY: copy all install clean uninstall
+.PHONY: copy all install clean uninstall run-xephyr
 
 all: copy nwm
 copy:
@@ -67,6 +67,14 @@ install: nwm
 	install -Dm644 nwm.desktop $(XSESSIONSDIR)/nwm.desktop
 	@echo "Installed nwm to $(BINDIR)"
 	@echo "Installed nwm.desktop to $(XSESSIONSDIR)"
+
+run-xephyr: CXXFLAGS += -DXEPHYR
+run-xephyr: nwm
+	@if ! pgrep -x Xephyr > /dev/null 2>&1; then \
+		Xephyr -br -ac -noreset -screen 1280x720 :1 & \
+		sleep 1; \
+	fi
+	DISPLAY=:1 ./nwm
 
 clean:
 	$(RM) nwm $(OBJ)
